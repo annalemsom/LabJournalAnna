@@ -1,26 +1,30 @@
 # Lab Journal
-A lab journal template for students following courses using RStudio and Git. Adapted from the original project by [Rob Franken](https://robfranken.github.io/LabJournal/). To use this, follow the steps below.
+A lab journal template for students following courses using RStudio and Git. Adapted from the original project by [Rob Franken](https://robfranken.github.io/LabJournal/). This setup will allow you to publish your R-projects as a website using an easy workflow.
+
+To use this, follow the steps below.
 
 
-## Preparation:
+## Preparation
 
 1. Make sure R and R-studio are installed;
 2. Make sure the `rmarkdown`-package is installed in R-studio (with "install dependencies");
 3. Make sure that you have a GitHub account;
-4. Make sure [GitHub Desktop](https://desktop.github.com) is installed and connected to your GitHub account.
-5. In the GitHub Desktop application, make sure your Git identity is set up correctly (File -> Options -> Git) with the same email as your GitHub account.
+4. Make sure that Git is installed. You can download and install it for your operating system from here: https://git-scm.com/install/. 
 
 
-## Forking the repository:
+## Forking the repository
+
+In this step you'll make a personal copy of this repository on your GitHub account, which you can customize and use for your own purposes. This is done by "forking" the repository. To do this:
 
 1. Navigate to https://rensec.github.io/LabJournal/; 
 2. Fork the repository using the fork button in the top right hand corner of Github, to make a personal copy of this lab journal;
-3. Under your repository name, navigate to 'Settings'; click on 'Pages' on the sidebar; select the main-branch as your publishing source, and serve from the 'docs'-folder.
+3. Under your repository name, navigate to 'Settings'; click on 'Pages' on the sidebar; select the main-branch as your publishing source, and "serve" from the "docs"-folder. This means that the files in the docs folder will be published as a website. Save your settings.
+
 
 You now have a personal copy of this repository on your account, which publishes html files (aka Github pages) as a website.
 
 ## Inviting collaborators:
-Navigate to 'Settings'; click on 'Collaborators', and invite the lectures of your course (e.g. rensec). After acceptance, the lecturers have access to you repository and can make contributions.
+Navigate to 'Settings'; click on 'Collaborators', and invite the lecturers of your course (e.g. rensec). After acceptance, the lecturers have access to you repository and can make contributions.
 
 
 ## Clone the repository:
@@ -30,13 +34,11 @@ Navigate to 'Settings'; click on 'Collaborators', and invite the lectures of you
 The forked repository at your local path contains all of the files you need. All you need for it to work is (the latest version of) R and R-studio installed.
 
 ## Customize your lab journal:
-1. Right-click on the repository name and click 'Open in Rstudio'; alternately, you can navigate to the repository at your local path and open the 'labjournal.Rproj' file. This should automatically open R-studio, and your current working environment will be inside this project.
+1. Navigate to the repository on your computer and open the 'labjournal.Rproj' file. This should automatically open R-studio, and your current working environment will be inside this project.
 2. Inside R-studio you should see a files tab in the bottom right hand corner; 
-3. Customize the 'index.Rmd' from the heading "my lab journal" as you wish within R-studio, to make it your own. This wil lbe the "front page" of jour lab journal;
+3. Customize the 'index.Rmd' from the heading "my lab journal" as you wish within R-studio, to make it your own. This will be the "front page" of your lab journal;
 4. Make sure to install the `remotes` and `klippy` packages. Commands are included in the index.Rmd.
-5. Journal your work using .Rmd-files.
 
-To maintain your personal notes and working scripts separately, create a dedicated folder. If you don't want this folder to be accessible to others, remember to add its name to the '.gitignore' file. Additionally, modify your 'site.yml' to ensure that the same content is excluded there as well. Keep in mind that any items within this folder will not be compiled.
 
 ## Journal your work
 1. To add files to your lab journal, create .Rmd files in the root directory of your repository. To create an .Rmd file, go to File -> New File -> R Markdown in R-studio. 
@@ -44,8 +46,11 @@ Choose HTML as the output format, and save the file in the root directory of you
 2. Add your code (this is where you do your actual work).
 3. Use the "knit" button in the top right hand corner of the .Rmd file to compile it. This will create an .html file with the same name as your .Rmd file, which is what will be published on your website.
 
+To maintain your personal notes and working scripts separately, create a dedicated folder. If you don't want this folder to be accessible to others, remember to add its name to the '.gitignore' file. Additionally, modify your 'site.yml' to ensure that the same content is excluded there as well. Keep in mind that any items within this folder will not be compiled.
+
+
 ## Commit your changes
-When you have made changes to your .Rmd file that you're happy with, you "commit" your changes; this is git terminology to save your changes to the repository. A commit creates a point that you can revert to in the future, and also forces you to derscribe what you did.
+When you have made changes to your .Rmd file that you're happy with, you "commit" your changes; this is git terminology to save your changes to the repository. A commit creates a point that you can revert to in the future, and also forces you to describe what you did.
 To do this:
 1. Save your file;
 2. Go the Git tab in the top right hand corner of R-studio; your file should appear there. Select your file to "stage" it, and click "commit".
@@ -59,6 +64,8 @@ A dialog box will pop up describing the result, you can close it, as well as the
 4. When compilation is complete, go to the Git tab, select all files that appear there (CTRL-A works) and commit them.
 5. Click "Push" in the Git tab to push your changes to GitHub. This will update your website with the new .Rmd file you added. 
 6. Your personal lab journal website will be published at: https://{USERNAME}.github.io/LabJournal/
+
+As you add new .Rmd files to your project, you can add them to your website by following the workflow starting from "Journal your work" until here. If you make changes to your files, you simply save your file, commit and push to GitHub, and your website will be updated with the changes you made. The list of commits (visible on Github as well as in RStudio) allows you (and us) to keep track of your changes, and revert to previous versions if needed.
 
 ## Useful resources: 
 1. Working with [Git](https://happygitwithr.com/index.html) and [GitHub Desktop](https://docs.github.com/en/desktop)
