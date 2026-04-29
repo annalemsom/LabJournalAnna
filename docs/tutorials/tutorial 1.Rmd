@@ -8,4 +8,184 @@ date: "2026-04-29"
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
+```{r}
+#install.packages("network")
+#install.packages("igraph")
+#install.packages("reshape2")
+#install.packages("tidyverse")
+library(network)
+library(igraph)
+library(reshape2)
+library(tidyverse)
+```
+```{r}
+url1 <- "https://github.com/rensec/sasr08/raw/main/g_adj_matrix_simple.csv"
+g_matrix <- read.csv(file = url1, header = FALSE)
+g_matrix
+```
+```{r}
+class(g_matrix)
+```
+```{r}
+g_matrix <- as.matrix(g_matrix)
+g_matrix
+```
+```{r}
+rownames(g_matrix) <- 1:nrow(g_matrix)
+colnames(g_matrix) <- 1:ncol(g_matrix)
+g_matrix
+```
+```{r}
+g_nodes_age <- read.csv(file = "https://github.com/rensec/sasr08/raw/main/g_nodes_age.csv")
+g_nodes_age
+```
+```{r}
+g <- graph_from_adjacency_matrix(g_matrix)
+class(g)
+```
+```{r}
+g
+```
+This output shows you that R sees the matrix g as a network; it shows you the edges.
+
+```{r}
+plot(g)
+```
+
+```{r}
+g <- set_vertex_attr(g, 
+                     name = "age",
+                     value = g_nodes_age$age)
+```
+```{r}
+plot(g)
+```
+QUESTION: I dont really understand what we did here?
+
+```{r}
+g_elist <- read.csv(file = "https://github.com/rensec/sasr08/raw/main/g_elist.csv")
+g_elist
+```
+```{r}
+g_from_elist <- graph_from_data_frame(g_elist) 
+plot(g_from_elist)
+```
+```{r}
+g_from_elist <- graph_from_data_frame(g_elist, vertices = g_nodes_age) 
+plot(g_from_elist)
+```
+
+1.3; adjacency list -> to igraph (network) object
+```{r}
+g_adj_list <- read.csv(file = "https://github.com/rensec/sasr08/raw/main/g_adj_list.csv")
+g_adj_list
+```
+```{r}
+g_elist_from_alist <- g_adj_list
+library(igraph)
+g_elist_from_alist <-  select(g_elist_from_alist, id, friend1:friend2) # keep only the network variables (and id)
+g_elist_from_alist <-  melt(g_elist_from_alist, id.vars = "id") # from the reshape2 package
+g_elist_from_alist
+```
+```{r}
+g_elist_from_alist <- g_elist_from_alist%>% 
+  filter(!is.na(value)) %>% # drop the missings
+  rename(from ="id", to = "value", sourcevar= "variable") %>% #just nice for interpretation
+  relocate(to, .after=from) #move around the columns
+g_elist_from_alist
+```
+With this you make the adjacency matrix more interpretable.
+--> sourcevar is an edge attribute indicating where in the adjacency list columns the alter was mentioned. Strictly speaking you don’t need the latter for a simple edge list, but it’s useful to keep in case you want to reverse the procedure.
+```{r}
+g_from_alist <- graph_from_data_frame(g_elist_from_alist) #This is a proper igraph graph object
+plot(g_from_alist)
+```
+we lost the isolate, so we need to include.
+```{r}
+nodelist <- select(g_adj_list,id,age)
+g_from_alist <- graph_from_data_frame(g_elist_from_alist, vertices = nodelist) #This is a proper igraph graph object
+plot(g_from_alist)
+```
+
+reverse from igraph object -> adjacency matrix
+```{r}
+g_adj_matrix <- as_adjacency_matrix(g, sparse = FALSE)
+g_adj_matrix
+```
+```{r}
+all(g_adj_matrix == g_matrix)
+```
+You do this to check whether the reversed matrix is indeed the same as the one we got from the file.
+
+reverse igraph object -> elist
+```{r}
+g_edgelist <- igraph::as_data_frame(g_from_elist, what = "edges") 
+g_edgelist 
+```
+Note that now, once more, we have lost our isolated node 5, as it is not included in the edge list!
+```{r}
+igraph::as_data_frame(g_from_elist, what = "vertices") 
+```
+
+from igraph object -> adjacency list
+```{r}
+edgelist_2 <- igraph::as_data_frame(g_from_alist, what = "edges")
+nodelist_2 <- igraph::as_data_frame(g_from_alist, what = "vertices")
+d <- edgelist_2 %>%
+  rename(id = "from") %>% 
+  pivot_wider( id_cols = id, names_from = sourcevar, values_from = to ) %>% 
+  merge(nodelist_2, by.x = "id", by.y = "name", all.y = TRUE ) %>% 
+  relocate(age, .after = id) %>% 
+  type_convert() #as_data_frame returns characters; this transforms it back to numeric
+```
+```{r}
+d
+```
+
+
+```{r}
+g_np <- as.network(g_elist_from_alist, matrix.type = "edgelist", vertices = nodelist)
+g_np
+```
+```{r}
+plot(g_np)
+```
+
+The choice between 'network' and 'igraph' is just depending on your research question, but igraph has my preference up until this point.
+
+```{r}
+g_mod <- delete_vertices(g,2)
+plot(g_mod)
+```
+```{r}
+g_mod <- delete_vertices(g,which(V(g)$age == 21))
+plot(g_mod)
+```
+here you remove all the nodes with the age 21.
+```{r}
+g_mod <- delete_vertices(g, which(is.na(V(g)$age)))
+plot(g_mod)
+```
+```{r}
+V(g)$gender <- c("male", "female", "female", "other", "male") 
+g
+```
+This is an alternative way to add attibrutes to nodes.
+
+Other fun things:
+```{r}
+g_rev <- reverse_edges(g)
+plot(g_rev)
+```
+```{r}
+g_union <- igraph::union(g, g_rev)
+```
+```{r}
+plot(g_union)
+```
+This is basically an undirected network. 
+```{r}
+g_undir <- as_undirected(g)
+plot(g_undir)
+```
 
