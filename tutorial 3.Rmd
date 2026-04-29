@@ -1,0 +1,119 @@
+---
+title: "tutorial 3"
+output: html_document
+date: "2026-04-29"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+PupilsWaveV <- read_dta(file = "PupilsWaveV.dta")
+```
+```{r}
+library(igraph)
+library(haven) # to read Stata files
+library(reshape2)
+library(tidyverse)
+```
+```{r}
+PupilsWaveV <- read_dta(file = "PupilsWaveV.dta")
+```
+
+```{r}
+class12b <- PupilsWaveV %>% 
+  filter(schoolnr == "12b")  # keep only one class
+```
+
+Assignment
+1) This data is in the format of an adjacency list.
+So first we have to transform the data into a igraph object, according to the corresponding procedure of adjacency list -> igraph object.
+
+
+```{r}
+library(igraph)
+g_elist_from_alist <- class12b
+g_elist_from_alist <-  select(g_elist_from_alist, namenr, friend1:friend12) # keep only the network and variables (and id)
+g_elist_from_alist <-  melt(g_elist_from_alist, id.vars = "namenr") # from the reshape2 package
+g_elist_from_alist
+```
+```{r}
+g_elist_from_alist <- g_elist_from_alist%>% 
+  filter(!is.na(value)) %>% # drop the missings
+  rename(from ="namenr", to = "value", sourcevar= "variable") %>% #just nice for interpretation
+  relocate(to, .after=from) #move around the columns
+g_elist_from_alist
+```
+```{r}
+g_from_alist <- graph_from_data_frame(g_elist_from_alist) #This is a proper igraph graph object
+plot(g_from_alist)
+```
+
+Now we have an igraph object with which we can work. Only now we have to add the attributes sex and age. And we have to make sure that the isolates are also in there.
+```{r}
+nodelist <- select(class12b,namenr,age,sex)
+g_from_alist <- graph_from_data_frame(g_elist_from_alist, vertices = nodelist) #This is a proper igraph graph object
+plot(g_from_alist)
+```
+```{r}
+vertex_attr(g_from_alist)
+```
+Question: is this the right way to do this? or am i still missing something?
+
+3.2) I think this is a directed network, because it's a name generator. So, we now from all pupils who they perceive as their friends. We can also check this:
+```{r}
+is_directed(g_from_alist)
+```
+3.3) A visualization of the network has already been given, but another one for fun:
+```{r}
+plot(g_from_alist)
+```
+
+3.4) A good SNA starts with looking at 5 basic properties; the 5 number summary.
+-Size
+```{r}
+vcount(g_from_alist)
+```
+```{r}
+ecount(g_from_alist)
+```
+
+-Density
+```{r}
+edge_density(g_from_alist)
+```
+
+-Components
+```{r}
+count_components(g_from_alist)
+```
+only 1 isolate
+
+-Diameter
+```{r}
+diameter(g_from_alist)
+```
+the longest shortest path is 7. 
+
+-Clustering coefficient
+```{r}
+transitivity(g_from_alist, type="average")
+```
+The proportion of actual ties between vertex' neighbours versus possible ties between vertex' neigbours; approximately 2/3.
+
+3.5) Question: can we please do this together in the lab session? Because I would not have come up with this myself.
+```{r}
+deg <- degree(g_from_alist, mode = "in")
+df <- data.frame(
+  degree = deg,
+  sex = V(g_from_alist)$sex
+)
+t.test(degree ~ sex, data = df, alternative = "greater")
+```
+Because the p-value is insignificant, you cannot say that the degree is significantly higher for girls than for boys in this network.
+
+
+
+
+
