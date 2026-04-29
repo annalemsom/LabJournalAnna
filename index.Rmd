@@ -1,10 +1,10 @@
 ---
-title: "Lab journal"
+title: "Lab journal Anna Lemsom"
 output:
   html_document:
     toc: false
     number_sections: false
-author: "by: Your Name"
+author: "by: Anna Lemsom"
 bibliography: references.bib
 
 ---

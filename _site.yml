@@ -16,6 +16,8 @@ navbar:
         href: lab1.html
       - text: "Page 2"
         href: test_rmd.html
+      - text: "Tutorial 1"
+      - href: tutorials/tutorial-1.html
         
         # here, other .Rmds can be added
 
