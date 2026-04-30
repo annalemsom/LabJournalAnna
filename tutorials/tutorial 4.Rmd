@@ -123,17 +123,29 @@ Now the spatial autoregressive combined model:
 sac <- sacsarlm(CRIME ~ INC + HOVAL, data = mydata, listw, Durbin = FALSE)
 summary(sac)
 ```
-Rho is not significant...
+Rho is not significant... because small dataset.
 
-spatial durbin model:
+spatial durbin model: exogenous effects (characteristics of the neighbors, not the outcome of the neighbor)
 ```{r}
 sdm <- lagsarlm(CRIME ~ INC + HOVAL, data = mydata, listw, Durbin = TRUE)
 summary(sdm)
 ```
-the lag's of the X's are not significant, but rho is significant again...
-question: i am lost a bit again. how does this model differ again from the first model?
+the lag's of the X's are not significant, but rho is significant. Although you cant interpret the lag coefficients, you can say that the characteristics of the neighbors do influence the outcome (level of crime) of the other neighborhood.
 
+Then the spatial durbin error model:
 ```{r}
+sdem <- errorsarlm(CRIME ~ INC + HOVAL, data = mydata, listw, Durbin = TRUE)
+summary(sdem)
+```
+General nested model:
+```{r}
+gnm <- sacsarlm(CRIME ~ INC + HOVAL, data = mydata, listw, Durbin = TRUE)
+summary(gnm)
+```
+Again, you have too small a dataset to take conclusions based on the lag coefficients.
 
+Assignment 4.2
+```{r}
+PupilsWaveV <- read_dta(file = "PupilsWaveV.dta")
 ```
 
