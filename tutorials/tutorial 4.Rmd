@@ -146,6 +146,85 @@ Again, you have too small a dataset to take conclusions based on the lag coeffic
 
 Assignment 4.2
 ```{r}
-PupilsWaveV <- read_dta(file = "PupilsWaveV.dta")
+PupilsWaveV1 <- read_dta(file = "PupilsWaveV (1).dta")
 ```
+Q2 Estimate a linear regression model of doing homework (acthomew) on sex (sex) while controlling for age (age)
+--> reverse the coding of acthomew and sex
+
+```{r}
+class(PupilsWaveV1)
+```
+```{r}
+attach(PupilsWaveV)
+```
+This enables you to just ask for the variables, instead of always using brackets.
+```{r}
+table(acthomew)
+table(sex)
+```
+```{r}
+str(sex)
+```
+
+So acthomew is measured on a scale from 1-5, with missing 9
+And sex on 1 female and 2 male.
+Now recode these.
+```{r}
+PupilsWaveV1$sex[PupilsWaveV1$sex == 9] <- NA
+acthomew_r <- 6 - acthomew
+female <- ifelse(sex == 2, 0,
+                 ifelse(sex == 1, 1, NA))
+```
+
+```{r}
+table(acthomew_r)
+table(female)
+```
+```{r}
+olsreg <- lm(acthomew_r ~ female + age)
+```
+```{r}
+summary(olsreg)
+```
+Q3 Estimate a multilevel linear model where you take class characteristics into account.
+
+```{r}
+#install.packages("lme4")
+library(lme4)
+```
+
+```{r}
+model <- lmer(acthomew_r ~ female + age + (1 | schoolnr), data = PupilsWaveV1)
+```
+```{r}
+summary(model)
+```
+
+```{r}
+class(PupilsWaveV1)
+```
+
+Q4. In addition to gender differences, we are now also interested in whether peers influence one’s homework behavior. From now on consider only Class 12b. Construct an adjacency matrix of best friends.
+```{r}
+class12b <- PupilsWaveV1 %>% 
+  filter(schoolnr == "12b")  # keep only one class
+```
+data is in the format of adjacency list, now transform to adjacency matrix of best friends. This is where you are going to transform to nb and then to a ‘weighted list - listw’.
+```{r}
+class(class12b) <- "nb"
+```
+
+
+```{r}
+listw <- nb2listw(class12b, style = "W")
+summary(listw)
+```
+Error in card(neighbours) : 
+  INTEGER() can only be applied to a 'integer', not a 'double'
+REACTIE: AAAAAAA, IK KAP ERMEE
+
+
+
+
+
 

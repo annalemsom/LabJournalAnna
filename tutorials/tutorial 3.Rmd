@@ -56,10 +56,9 @@ nodelist <- select(class12b,namenr,age,sex)
 g_from_alist <- graph_from_data_frame(g_elist_from_alist, vertices = nodelist) #This is a proper igraph graph object
 plot(g_from_alist)
 ```
-```{r}
-vertex_attr(g_from_alist)
-```
-Question: is this the right way to do this? or am i still missing something?
+
+you can also ask for a overview of the nodelist to check whether the attributes of the nodes are included now, but if you added them to your nodelist then they are in.
+
 
 3.2) I think this is a directed network, because it's a name generator. So, we now from all pupils who they perceive as their friends. We can also check this:
 ```{r}
@@ -69,6 +68,7 @@ is_directed(g_from_alist)
 ```{r}
 plot(g_from_alist)
 ```
+you can specify different layouts; look at the answer sheet on brightspace.
 
 3.4) A good SNA starts with looking at 5 basic properties; the 5 number summary.
 -Size
