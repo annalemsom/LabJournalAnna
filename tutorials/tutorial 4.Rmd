@@ -9,3 +9,131 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 
+```{r}
+library(klippy)
+library(remotes)
+library(igraph)
+library(haven) # to read Stata files
+library(reshape2)
+library(tidyverse)
+library(knitr)
+library(network)
+
+```
+```{r}
+install.packages("spdep")
+```
+```{r}
+library(spdep)
+data(columbus)
+mydata <- columbus
+```
+```{r}
+attach(mydata)
+```
+
+Question: I dont get why you need to do this... what do you mean use dollar sign? or is this for further in the analysis?
+
+```{r}
+install.packages("spatialreg")
+library(spatialreg)
+```
+```{r}
+neighbors <- col.gal.nb
+```
+```{r}
+class(neighbors)
+```
+This means that the dataframe is a neighborhood object. For spatial matrix you need a ‘weighted list - listw’ object. 
+1. first convert the dataframe to nb; class(dataframe) <- “nb”
+2. then do the following:
+```{r}
+listw <- nb2listw(neighbors, style = "W")
+summary(listw)
+```
+the average number of links: 4.69. So every region has an average of 5 neighbors. 
+
+```{r}
+summary(CRIME)
+summary(INC)
+summary(HOVAL)
+```
+```{r}
+plot(neighbors, coords)
+```
+R needs the coordinates of the neighborhoods to know where to place them, this is what chat says: 
+"The coords argument provides the actual positions (x, y) of each observation so that:
+
+Each node can be placed on the map
+Edges (connections) can be drawn between the correct locations
+
+Without coordinates, R would know the connections but wouldn’t know where to draw them."
+
+```{r}
+olsreg <- lm(CRIME ~ INC + HOVAL)
+summary(olsreg)
+```
+The coefficients show a negative association between income and crime rate in a neighborhood. Only we did not take spacial dependence into account, so we need to check whether this has to be done:
+
+Moran's I test:
+```{r}
+moran.test(CRIME, listw)
+```
+Is significant.
+Now we need to figure out which type of spatial models we should use. For this purpose, we use Lagrange multiplier tests for spatial lag and spatial error dependencies.
+
+Lagrange multiplier test:
+```{r}
+lm.LMtests(olsreg, listw, test=c("LMlag", "LMerr"))
+```
+The null-hypotheses of no spatial error dependence and no spatial lag dependence can both be rejected; so there is spatial dependence.
+--> remember that these hypotheses are not compared to each other, but only to linear regression.
+--> use both models (lag and error) and see whether results differ.
+
+The spatial lag model (spillover effects):
+```{r}
+slm <- lagsarlm(CRIME ~ INC + HOVAL, data = mydata, listw, Durbin = "FALSE")
+summary(slm)
+```
+Do not interpret the b, for there is an autoregressive term in the formula; the y is predicting y itself...
+--> Rho: spatial parameter is significant, showing us that there is spatial lag dependency. 
+
+Direct and indirect impacts:
+```{r}
+im<-impacts(slm, listw = listw, zstats=TRUE, R=200)
+sums<-summary(im,  zstats=T)
+data.frame(sums$res)
+```
+specify zstats for asking the p-values.
+Question: what is res?? If it is residual, how does this give me the direct and indirect impacts?
+```{r}
+data.frame(sums$pzmat)
+```
+The direct and indirect effect are both (almost) significant, however, the total effect is mostly driven by the direct effect (also including the feedback loop). 
+
+Now the spatial error model (question: exogenous effects?)
+```{r}
+sem <- errorsarlm(CRIME ~ INC + HOVAL, data = mydata, listw, Durbin = FALSE)
+summary(sem)
+```
+Lamba (the spatial parameter) is again positive and significant and the regression coefficients are again negative and significant.
+
+Now the spatial autoregressive combined model:
+```{r}
+sac <- sacsarlm(CRIME ~ INC + HOVAL, data = mydata, listw, Durbin = FALSE)
+summary(sac)
+```
+Rho is not significant...
+
+spatial durbin model:
+```{r}
+sdm <- lagsarlm(CRIME ~ INC + HOVAL, data = mydata, listw, Durbin = TRUE)
+summary(sdm)
+```
+the lag's of the X's are not significant, but rho is significant again...
+question: i am lost a bit again. how does this model differ again from the first model?
+
+```{r}
+
+```
+
