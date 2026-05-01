@@ -22,4 +22,65 @@ library(haven)
 load(url("https://github.com/rensec/sasr08/raw/main/classnet.rdata"))
 summary(classnet)
 ```
+Unfortunately, network does not handle factor variables, so we first need to convert ‘sex’ to a numeric variable.
+
+```{r}
+V(classnet)$sex <-as.numeric(V(classnet)$sex)
+g <- asNetwork(classnet)
+g
+```
+```{r}
+gplot(g,  vertex.col=g %v% "sex"*2)
+```
+Looks like we have some gender homophily going on here, as well as a lot of reciprocity! With ERGM, we can test this statistically.
+
+Testing the hypothesis: ties are likely to be reciprocated.
+```{r}
+M1.g<-ergm(g ~ edges +  mutual )
+```
+question: where do you find this list of tendencies i could use? because i wouldnt know myself that i could just use mutual as an independent var.
+
+```{r}
+summary(M1.g)
+```
+Edges is significant: tells u something about the random probability of forming ties.
+Mutual is significant: when there already is a tie (directed), the probability of a reciprocated tie (directed back) is higher. 
+
+When you add the nodematch effect (homophily of genders) and the nodefactor effect (difference between genders in their ties):
+
+```{r}
+M2.g<-ergm(g ~ edges + mutual +  nodefactor("sex", levels = 2) + nodematch("sex" ))
+
+summary(M2.g)
+```
+nodematch is significant, so genders are more likely to have ties with the same gender
+nodefactor is not significant, so boys do not have more ties than the other.
+
+```{r}
+M2.g.gof <- gof(M2.g)
+M2.g.gof
+```
+If the observed value (obs) falls within the range (min-max) then the model fits your data well.
+the p-value is a Monte Carlo test: “How extreme is the observed value compared to what the model typically produces?”
+--> close to one, the observed value is typical for this model.
+the model statistics (what the model measures) looks good.
+the features that were not included in the model, are not typical under this model: 
+chat --> So you look at:
+
+Degree distribution
+Distances
+Clustering patterns (ESP, triangles, etc.)
+
+If you see:
+
+Observed line far outside simulated envelopes, or
+Very low p-values
+
+👉 Then the model is missing structure
+```{r}
+plot(M2.g.gof)
+```
+for directed networks, it is common to include at least some parameters related to degree, reciprocity, and something related to triadic closure. 
+--> the fact that the goodness of fit is quite low for the unmeasured features, says that you should include these in the model. 
+
 
