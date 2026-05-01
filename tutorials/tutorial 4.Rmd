@@ -209,19 +209,85 @@ Q4. In addition to gender differences, we are now also interested in whether pee
 class12b <- PupilsWaveV1 %>% 
   filter(schoolnr == "12b")  # keep only one class
 ```
-data is in the format of adjacency list, now transform to adjacency matrix of best friends. This is where you are going to transform to nb and then to a ‘weighted list - listw’.
+data is in the format of adjacency list, now transform to matrix (i transformed it to edge list; object) of best friends. 
+
 ```{r}
-class(class12b) <- "nb"
+knecht_4b <- select(class12b, namenr, friend1:friend12) # keep only the network and variables (and id)
+
+```
+```{r}
+library(igraph)
+library(reshape2)
+library(tidyverse)
+g_elist_from_alist <-  melt(knecht_4b, id.vars = "namenr") # from the reshape2 package
+g_elist_from_alist
+```
+```{r}
+g_elist_from_alist <- g_elist_from_alist%>% 
+  filter(!is.na(value)) %>% # drop the missings
+  rename(from ="namenr", to = "value", sourcevar= "variable") %>% #just nice for interpretation
+  relocate(to, .after=from) #move around the columns
+g_elist_from_alist
 ```
 
+Now i can also transform it to an adjacency matrix.
+```{r}
+#g_adjmatrix_from_elist <- graph_from_data_frame(g_elist_from_alist, directed = FALSE)
+#mat <- as_adjacency_matrix(g_adjmatrix_from_elist)
+
+```
+```{r}
+g_from_alist <- graph_from_data_frame(g_elist_from_alist) #This is a proper igraph graph object
+plot(g_from_alist)
+```
+
+Q5. Construct a row-standardized spatial weight matrix as a weights list object. Set the option ‘zero.policy’ to TRUE because you have isolates.
+First change the dataframe to a weight list object.
 
 ```{r}
-listw <- nb2listw(class12b, style = "W")
+class(mat)
+```
+```{r}
+library(spdep)
+listw <- mat2listw(mat, style = "W", zero.policy = TRUE)
+```
+So, to make a weighted list you need the adjacency matrix of best friends. Which is why i first made this (Q4). 
+```{r}
 summary(listw)
 ```
-Error in card(neighbours) : 
-  INTEGER() can only be applied to a 'integer', not a 'double'
-REACTIE: AAAAAAA, IK KAP ERMEE
+Approximately, a pupil has 5 ties.
+
+Q6. Conduct and interpret the Moran’s I test and the Lagrange multiplier tests. Moran’s I expects a weights list object.
+
+```{r}
+moran.test(acthomew_r, listw)
+```
+Error in na.fail.default(x) : missing values in object
+
+```{r}
+library(spatialreg)
+```
+```{r}
+moran.test(acthomew_r, listw, na.action = na.omit)
+```
+Error in subset.listw(listw, subset, zero.policy = zero.policy) :
+Not yet able to subset general weights lists
+solution: you have to report the missings in homework behavior and then remake the weighted list? -> takes too much time for me to do now.
+```{r}
+listw_clean <- spdep::subset(listw, subset = keep, zero.policy = TRUE)
+```
+```{r}
+#keep <- complete.cases(acthomew_r)
+
+#x_clean <- acthomew_r[keep]
+```
+
+
+
+
+
+
+
 
 
 
